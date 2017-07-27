@@ -11,7 +11,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
-        print("Handler: json:", json.dumps(data).encode('utf-8'))
         self.wfile.write(json.dumps(data).encode('utf-8'))
 
 class HTTPServer(http.server.HTTPServer):
