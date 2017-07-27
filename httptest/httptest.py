@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
+import json
 import http.server
 import multiprocessing
 
 class FailedToStart(Exception): pass
 
-class Handler(http.server.SimpleHTTPRequestHandler): pass
+class Handler(http.server.SimpleHTTPRequestHandler):
+
+    def json(self, data):
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+        print("Handler: json:", json.dumps(data).encode('utf-8'))
+        self.wfile.write(json.dumps(data).encode('utf-8'))
 
 class HTTPServer(http.server.HTTPServer):
 
