@@ -13,6 +13,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(json.dumps(data).encode('utf-8'))
 
+    def log_message(self, f, *args, **kwargs):
+        pass
+
 class HTTPServer(http.server.HTTPServer):
 
     allow_reuse_address = True
