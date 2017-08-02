@@ -1,10 +1,20 @@
 #!/usr/bin/env python3
+'''
+setup.py: Upload httptest to PyPi
+'''
 import os
 from setuptools import setup, find_packages
 
-# Get the version
-with open(os.path.join('httptest', 'version.py'), 'rb') as fd:
-    VERSION = fd.read().decode('utf-8').split()[-1].replace('\'', '')
+def contents(*a):
+    '''
+    Opens a file relative to this file
+    '''
+    with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), *a), 'rb') as filedesc:
+        return filedesc.read().decode('utf-8')
+
+# Get the version and README
+VERSION = contents('httptest', 'version.py').split()[-1].replace('\'', '')
+README = contents('README.rst')
 
 setup(
     name='httptest',
@@ -13,6 +23,7 @@ setup(
     data_files=[('', ['LICENSE']), ],
     entry_points={},
     description='Add unit tests to your http clients',
+    long_description=README,
     author='John Andersen',
     author_email='johnandersenpdx@gmail.com',
     url='https://github.com/pdxjohnny/httptest',
