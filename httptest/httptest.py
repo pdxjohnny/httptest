@@ -77,10 +77,14 @@ class CachingProxyHandler(Handler):
         return ConfiguredCachingProxyHandler
 
     def proxied_url(self):
-        # urlparse(self.metho)
-        pass
+        url = self.UPSTREAM.geturl() + self.path
+        while '//' in url:
+            url = url.replace('//', '/')
+        return url.replace(':/', '://')
 
     def cache_path(self, *args):
+        if not os.path.isdir(self.STATE_DIR):
+            os.makedirs(self.STATE_DIR)
         return os.path.join(self.STATE_DIR, *args)
 
     def cached(self, key):
@@ -110,6 +114,8 @@ class CachingProxyHandler(Handler):
 
     @contextmanager
     def save_cache(self, key, status, headers, body):
+        with open(self.cache_path(key + '.hits'), 'w') as fd:
+            fd.write(str(0))
         with open(self.cache_path(key + '.status'), 'w') as fd:
             fd.write(str(status))
         with open(self.cache_path(key + '.headers'), 'w') as fd:
@@ -121,6 +127,11 @@ class CachingProxyHandler(Handler):
 
     @contextmanager
     def load_cache(self, key):
+        if os.path.exists(self.cache_path(key + '.hits')):
+            with open(self.cache_path(key + '.hits'), 'r') as fd:
+                hits = int(fd.read())
+            with open(self.cache_path(key + '.hits'), 'w') as fd:
+                fd.write(str(hits + 1))
         with open(self.cache_path(key + '.status'), 'r') as fd:
             status = int(fd.read())
         with open(self.cache_path(key + '.headers'), 'r') as fd:
@@ -132,6 +143,7 @@ class CachingProxyHandler(Handler):
         '''
         Forward the request by making a similar request with urllib
         '''
+        self.headers.replace_header('Host', self.UPSTREAM.netloc)
         key, data = self.cache_key()
         if self.cached(key):
             # Load from cache
@@ -145,8 +157,7 @@ class CachingProxyHandler(Handler):
                 self.wfile.write(fd.read())
         else:
             # Run request (not cached)
-            url = urljoin(self.UPSTREAM.geturl(), self.path)
-            req = urllib.request.Request(url,
+            req = urllib.request.Request(self.proxied_url(),
                                          headers=self.headers,
                                          data=data,
                                          method=self.command)
