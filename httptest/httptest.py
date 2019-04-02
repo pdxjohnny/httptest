@@ -3,11 +3,16 @@
 httptest offers the Handler for serving test data and the HTTPServer
 which is started and stopped using the httptest.Server() decorator.
 '''
+import os
 import json
+import hashlib
 import selectors
 import threading
 import http.server
+import urllib.request
 import multiprocessing
+from urllib.parse import urlparse, urljoin
+from contextlib import contextmanager
 
 class FailedToStart(Exception):
     '''
@@ -48,6 +53,114 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         Disables server logs
         '''
         pass
+
+class CachingProxyHandler(Handler):
+    '''
+    Handler to use with httptest.Server which caches requests to an upstream
+    server.
+    '''
+
+    @classmethod
+    def to(cls, upstream, state_dir=None):
+        '''
+        Creates a CachingProxyHandler which will proxy requests to an upstream
+        server.
+        '''
+        if state_dir is None:
+            state_dir = os.path.join(os.getcwd(), '.cache', 'httptest')
+
+        upstream = urlparse(upstream)
+
+        class ConfiguredCachingProxyHandler(cls):
+            UPSTREAM = upstream
+            STATE_DIR = state_dir
+        return ConfiguredCachingProxyHandler
+
+    def proxied_url(self):
+        # urlparse(self.metho)
+        pass
+
+    def cache_path(self, *args):
+        return os.path.join(self.STATE_DIR, *args)
+
+    def cached(self, key):
+        return bool(all(list(map(lambda needed: \
+                    os.path.isfile(self.cache_path(key + needed)),
+                    ['.status', '.headers', '.body']))))
+
+    def cache_key(self):
+        body = None
+        if 'Content-Length' in self.headers:
+            length = self.headers['Content-Length']
+            body = io.BytesIO(self.rfile.read(length))
+        digest = hashlib.sha384()
+        digest.update(self.requestline.encode('utf-8', errors='ignore'))
+        def sort_headers(kv):
+            '''
+            Sort headers dict so it always is in the same order.
+            '''
+            return kv[0].lower()
+        for k, v in sorted(self.headers.items(), key=sort_headers):
+            digest.update(k.encode('utf-8', errors='ignore'))
+            digest.update(v.encode('utf-8', errors='ignore'))
+        if body is not None:
+            digest.update(body.read())
+            body.seek(0)
+        return digest.hexdigest(), body
+
+    @contextmanager
+    def save_cache(self, key, status, headers, body):
+        with open(self.cache_path(key + '.status'), 'w') as fd:
+            fd.write(str(status))
+        with open(self.cache_path(key + '.headers'), 'w') as fd:
+            json.dump(dict(headers._headers), fd)
+        with open(self.cache_path(key + '.body'), 'wb') as fd:
+            fd.write(body.read())
+        with open(self.cache_path(key + '.body'), 'rb') as fd:
+            yield fd
+
+    @contextmanager
+    def load_cache(self, key):
+        with open(self.cache_path(key + '.status'), 'r') as fd:
+            status = int(fd.read())
+        with open(self.cache_path(key + '.headers'), 'r') as fd:
+            headers = json.load(fd)
+        with open(self.cache_path(key + '.body'), 'rb') as fd:
+            yield status, headers, fd
+
+    def do_forward(self):
+        '''
+        Forward the request by making a similar request with urllib
+        '''
+        key, data = self.cache_key()
+        if self.cached(key):
+            # Load from cache
+            if data is not None:
+                data.close()
+            with self.load_cache(key) as (status, headers, fd):
+                self.send_response(status)
+                for header, content in headers.items():
+                    self.send_header(header, content)
+                self.end_headers()
+                self.wfile.write(fd.read())
+        else:
+            # Run request (not cached)
+            url = urljoin(self.UPSTREAM.geturl(), self.path)
+            req = urllib.request.Request(url,
+                                         headers=self.headers,
+                                         data=data,
+                                         method=self.command)
+            with urllib.request.urlopen(req) as f:
+                self.send_response(f.status)
+                for header, content in f.headers.items():
+                    self.send_header(header, content)
+                self.end_headers()
+                with self.save_cache(key, f.status, f.headers, f) as c:
+                    self.wfile.write(c.read())
+
+# Make sure CachingProxyHandler responds to all HTTP methods
+for method in 'GET HEAD POST PUT DELETE CONNECT OPTIONS TRACE PATCH'.split():
+    setattr(CachingProxyHandler, 'do_' + method, CachingProxyHandler.do_forward)
 
 class HTTPServer(http.server.HTTPServer):
     '''
