@@ -4,6 +4,7 @@ httptest offers the Handler for serving test data and the HTTPServer
 which is started and stopped using the httptest.Server() decorator.
 '''
 import os
+import io
 import json
 import hashlib
 import selectors
@@ -95,7 +96,7 @@ class CachingProxyHandler(Handler):
     def cache_key(self):
         body = None
         if 'Content-Length' in self.headers:
-            length = self.headers['Content-Length']
+            length = int(self.headers['Content-Length'])
             body = io.BytesIO(self.rfile.read(length))
         digest = hashlib.sha384()
         digest.update(self.requestline.encode('utf-8', errors='ignore'))
@@ -161,13 +162,21 @@ class CachingProxyHandler(Handler):
                                          headers=self.headers,
                                          data=data,
                                          method=self.command)
-            with urllib.request.urlopen(req) as f:
-                self.send_response(f.status)
-                for header, content in f.headers.items():
+            try:
+                with urllib.request.urlopen(req) as f:
+                    self.send_response(f.status)
+                    for header, content in f.headers.items():
+                        self.send_header(header, content)
+                    self.end_headers()
+                    with self.save_cache(key, f.status, f.headers, f) as c:
+                        self.wfile.write(c.read())
+            except urllib.error.HTTPError as e:
+                self.send_response(e.status, message=e.reason)
+                for header, content in e.headers.items():
                     self.send_header(header, content)
                 self.end_headers()
-                with self.save_cache(key, f.status, f.headers, f) as c:
-                    self.wfile.write(c.read())
+                self.wfile.write(e.read())
+
 
 # Make sure CachingProxyHandler responds to all HTTP methods
 for method in 'GET HEAD POST PUT DELETE CONNECT OPTIONS TRACE PATCH'.split():

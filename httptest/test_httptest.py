@@ -6,6 +6,7 @@ import os
 import glob
 import tempfile
 import unittest
+import urllib.error
 import urllib.request
 
 import httptest
@@ -60,12 +61,28 @@ class TestCachingMethods(unittest.TestCase):
                 with urllib.request.urlopen(ts.url() + 'get') as f:
                     self.assertEqual(f.read().decode('utf-8'), "what up")
                 self.assertEqual(len(list(glob.glob(os.path.join(tempdir,
-                    '*')))), 3)
+                    '*')))), 4)
                 with open(glob.glob(os.path.join(tempdir, '*.body'))[0], 'wb') \
                         as fd:
                     fd.write(b"waassss aaaap")
                 with urllib.request.urlopen(ts.url() + 'get') as f:
                     self.assertEqual(f.read().decode('utf-8'), "waassss aaaap")
+
+            test_cached()
+
+    @httptest.Server(TestHTTPServer)
+    def test_forwards_error(self, ts=httptest.NoServer()):
+        '''
+        Make sure we can read the server's response.
+        '''
+        with tempfile.TemporaryDirectory() as tempdir:
+            @httptest.Server(httptest.CachingProxyHandler.to(ts.url(),
+                             state_dir=tempdir))
+            def test_cached(ts=httptest.NoServer()):
+                req = urllib.request.Request(ts.url() + 'p', method='POST')
+                with self.assertRaises(urllib.error.HTTPError):
+                    with urllib.request.urlopen(req) as f:
+                        pass
 
             test_cached()
 
