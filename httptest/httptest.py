@@ -155,7 +155,10 @@ class CachingProxyHandler(Handler):
                 for header, content in headers.items():
                     self.send_header(header, content)
                 self.end_headers()
-                self.wfile.write(fd.read())
+                try:
+                    self.wfile.write(fd.read())
+                except BrokenPipeError:
+                    pass
         else:
             # Run request (not cached)
             req = urllib.request.Request(self.proxied_url(),
@@ -169,7 +172,10 @@ class CachingProxyHandler(Handler):
                         self.send_header(header, content)
                     self.end_headers()
                     with self.save_cache(key, f.status, f.headers, f) as c:
-                        self.wfile.write(c.read())
+                        try:
+                            self.wfile.write(c.read())
+                        except BrokenPipeError:
+                            pass
             except urllib.error.HTTPError as e:
                 self.send_response(e.status, message=e.reason)
                 for header, content in e.headers.items():
