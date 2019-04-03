@@ -175,14 +175,17 @@ class CachingProxyHandler(Handler):
                 for header, content in e.headers.items():
                     self.send_header(header, content)
                 self.end_headers()
-                self.wfile.write(e.read())
+                try:
+                    self.wfile.write(e.read())
+                except BrokenPipeError:
+                    pass
 
 
 # Make sure CachingProxyHandler responds to all HTTP methods
 for method in 'GET HEAD POST PUT DELETE CONNECT OPTIONS TRACE PATCH'.split():
     setattr(CachingProxyHandler, 'do_' + method, CachingProxyHandler.do_forward)
 
-class HTTPServer(http.server.HTTPServer):
+class HTTPServer(http.server.ThreadingHTTPServer):
     '''
     Starts and manages the running server process.
     '''
