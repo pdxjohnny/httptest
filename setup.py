@@ -21,7 +21,6 @@ setup(
     packages=find_packages(),
     version=VERSION,
     data_files=[('', ['LICENSE']), ],
-    entry_points={},
     description='Add unit tests to your http clients',
     long_description=README,
     author='John Andersen',
@@ -34,7 +33,12 @@ setup(
         'Environment :: Console',
         'Operating System :: POSIX :: Linux',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.7',
         'Intended Audience :: Developers'
-    ]
+    ],
+    entry_points={
+        'console_scripts': [
+            'httptest-cache = httptest.cli:cache',
+        ],
+    }
 )
