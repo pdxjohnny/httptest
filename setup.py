@@ -14,7 +14,7 @@ def contents(*a):
 
 # Get the version and README
 VERSION = contents('httptest', 'version.py').split()[-1].replace('\'', '')
-README = contents('README.rst')
+README = contents('README.md')
 
 setup(
     name='httptest',
@@ -23,6 +23,7 @@ setup(
     data_files=[('', ['LICENSE']), ],
     description='Add unit tests to your http clients',
     long_description=README,
+    long_description_content_type='text/markdown',
     author='John Andersen',
     author_email='johnandersenpdx@gmail.com',
     url='https://github.com/pdxjohnny/httptest',

@@ -7,6 +7,7 @@ import os
 import io
 import json
 import hashlib
+import inspect
 import selectors
 import threading
 import http.server
@@ -14,6 +15,14 @@ import urllib.request
 import multiprocessing
 from urllib.parse import urlparse, urljoin
 from contextlib import contextmanager
+
+if getattr(http.server, 'ThreadingHTTPServer', False):
+    ThreadingHTTPServer = http.server.ThreadingHTTPServer
+else:
+    import socketserver
+    class ThreadingHTTPServer(socketserver.ThreadingMixIn,
+                              http.server.HTTPServer):
+        pass
 
 class FailedToStart(Exception):
     '''
@@ -191,7 +200,7 @@ class CachingProxyHandler(Handler):
 for method in 'GET HEAD POST PUT DELETE CONNECT OPTIONS TRACE PATCH'.split():
     setattr(CachingProxyHandler, 'do_' + method, CachingProxyHandler.do_forward)
 
-class HTTPServer(http.server.ThreadingHTTPServer):
+class HTTPServer(ThreadingHTTPServer):
     '''
     Starts and manages the running server process.
     '''
@@ -284,59 +293,36 @@ class Server(object):
         self.server_port = addr[1]
 
     def __call__(self, func, *args, **kwargs):
-        def wrap(*args, **kwargs):
-            '''
-            Starts the HTTPServer runs the test then stops the server
-            '''
-            server = HTTPServer(self._addr, self._class)
-            self.server_name, self.server_port = server.start_background()
-            try:
-                res = func(*args, ts=self, **kwargs)
-            except:
+        '''
+        Starts the HTTPServer runs the test then stops the server
+        '''
+        if inspect.iscoroutinefunction(func):
+            async def wrap(*args, **kwargs):
+                server = HTTPServer(self._addr, self._class)
+                self.server_name, self.server_port = server.start_background()
+                try:
+                    res = await func(*args, ts=self, **kwargs)
+                except:
+                    server.stop_background()
+                    raise
                 server.stop_background()
-                raise
-            server.stop_background()
-            return res
-        return wrap
+                return res
+            return wrap
+        else:
+            def wrap(*args, **kwargs):
+                server = HTTPServer(self._addr, self._class)
+                self.server_name, self.server_port = server.start_background()
+                try:
+                    res = func(*args, ts=self, **kwargs)
+                except:
+                    server.stop_background()
+                    raise
+                server.stop_background()
+                return res
+            return wrap
 
     def url(self):
         '''
         Server URL formatted as http://server_name:server_port/
         '''
         return 'http://{0}:{1}/'.format(self.server_name, self.server_port)
-
-class AsyncServer(Server):
-    '''
-    AsyncServer is the decorator used on async unittest methods.
-
-    NOTE:
-        unittest.TestCase will not run async methods. You must harness
-        appropriately.
-
-    Example:
-        class TestJSONServer(httptest.Handler):
-            def do_GET(self):
-                self.json([2, 4])
-
-        class TestHandlerMethods(unittest.TestCase):
-            @httptest.Server(TestJSONServer)
-            async def test_json(self, ts=httptest.NoServer()):
-                with urllib.request.urlopen(ts.url()) as f:
-                    self.assertEqual(f.read().decode("utf-8"), "[2, 4]")
-    '''
-
-    def __call__(self, func, *args, **kwargs):
-        async def wrap(*args, **kwargs):
-            '''
-            Starts the HTTPServer runs the test then stops the server
-            '''
-            server = HTTPServer(self._addr, self._class)
-            self.server_name, self.server_port = server.start_background()
-            try:
-                res = await func(*args, ts=self, **kwargs)
-            except:
-                server.stop_background()
-                raise
-            server.stop_background()
-            return res
-        return wrap

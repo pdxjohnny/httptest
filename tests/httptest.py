@@ -4,6 +4,7 @@ Unit tests for httptest
 '''
 import os
 import glob
+import asyncio
 import tempfile
 import unittest
 import urllib.error
@@ -43,6 +44,18 @@ class TestServerMethods(unittest.TestCase):
         '''
         with urllib.request.urlopen(ts.url()) as f:
             self.assertEqual(f.read().decode('utf-8'), "what up")
+
+    def test_async_call_response(self):
+        '''
+        Check that httptest.Server works for coroutine functions.
+        '''
+        @httptest.Server(TestHTTPServer)
+        async def run_test(ts=httptest.NoServer()):
+            with urllib.request.urlopen(ts.url()) as f:
+                self.assertEqual(f.read().decode('utf-8'), "what up")
+        loop = asyncio.new_event_loop()
+        loop.run_until_complete(run_test())
+        loop.close()
 
 class TestCachingMethods(unittest.TestCase):
     '''

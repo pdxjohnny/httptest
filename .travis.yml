@@ -1,0 +1,18 @@
+language: python
+dist: xenial
+python:
+- '3.5'
+- '3.6'
+- '3.7'
+env:
+  global:
+    secure: jSHbml1HCHolWLLUM3FdkX0q9dV9L7rE5ewSUaLiO6a0BJeUCjY7Fc2kb1StTDRpZf7kqAvoezui/c0ktQ/O7AHFSPHXWJhEk1O6ydWFJ5F9TBpknKl4gE0nkd9c73nS29BrabZUsw7Vx/R1gaSAzmTUifBc3/ASVKdKSiAQUX3+OU+jn8ouKgPsp7P4S2yhXuY2mXjSmRXNg59fjKcOuVE+urh+eVUBxqCuBV/P9YnVnsRH3npEk1HfxfqayyzkhcULz65UrQQzn9Ms6vH/ZaP9RSkbt3TzzIZfZyjn/k1FtOP4GrYddmvuvzkpbRVUy6fqwep1h1h/vIMHBQ0TreKT9Z/Xix3d1uRJP1G6uHNoN4lVB1YAT/L8ryTtlchoYZEwslvEpixpDxQkREkNSsvTJs1tQjQQWoixVcSZmWky1jY9G+LV2BvM4CQ59/T9sGv1wGwJUWU9+EXSWwOpjlhVUQpimrb4UZFGk0ScCA0uq0Z/G0PD2l25PzutQJr8wg/98BgAnDnroIeBmVGpg9sUUeANeo7yDoVdFPGJmn/d9a1u94MawPPc2lwM/+to2euNwONUobnvsBO6addhIf6IhvUjI5ccs+Gr6QqE6hWb5afcUHTZ1yo/0X5K0IO+LhGl05iZ/srJve2c8Ber5ZXXInVb/zu1uZP+W4WTRio=
+cache:
+  directories:
+  - "/home/travis/.local/"
+before_install:
+- pip install coverage codecov
+script:
+- coverage run setup.py test
+after_success:
+- codecov
