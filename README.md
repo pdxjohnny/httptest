@@ -38,14 +38,22 @@ if __name__ == '__main__':
 
 Asyncio support for the unittest package hasn't yet landed in Python.
 [python/issue32972](https://bugs.python.org/issue32972).
+It should land in 3.8, check it out
+[here](https://github.com/python/cpython/pull/13386).
 
 If you want a quick way to add `asyncio` test cases you can import the helper
 from [intel/dffml](https://github.com/intel/dffml).
 
 ```python
+import sys
 import unittest
 import urllib.request
-from dffml.util.asynctestcase import AsyncTestCase
+if sys.version_info.minor == 3 \
+        and sys.version_info.minor <= 7:
+    from dffml.util.asynctestcase import AsyncTestCase
+else:
+    # In Python 3.8
+    from unittest import IsolatedAsyncioTestCase as AsyncTestCase
 
 import httptest
 
