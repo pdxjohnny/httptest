@@ -1,6 +1,7 @@
 # httptest
 
 [![Build Status](https://travis-ci.org/pdxjohnny/httptest.svg?branch=master)](https://travis-ci.org/pdxjohnny/httptest) [![codecov](https://codecov.io/gh/pdxjohnny/httptest/branch/master/graph/badge.svg)](https://codecov.io/gh/pdxjohnny/httptest)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fpdxjohnny%2Fhttptest.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fpdxjohnny%2Fhttptest?ref=badge_shield)
 
 HTTP testing inspired by golang's httptest package. Supports wrapping asyncio
 coroutine functions (`async def`).
@@ -106,3 +107,7 @@ setup(
     ]
 )
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fpdxjohnny%2Fhttptest.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fpdxjohnny%2Fhttptest?ref=badge_large)
