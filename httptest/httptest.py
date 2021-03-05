@@ -298,28 +298,22 @@ class Server(object):
         '''
         if inspect.iscoroutinefunction(func):
             async def wrap(*args, **kwargs):
-                server = HTTPServer(self._addr, self._class)
-                self.server_name, self.server_port = server.start_background()
-                try:
-                    res = await func(*args, ts=self, **kwargs)
-                except:
-                    server.stop_background()
-                    raise
-                server.stop_background()
-                return res
-            return wrap
+                with self:
+                    return await func(*args, ts=self, **kwargs)
         else:
             def wrap(*args, **kwargs):
-                server = HTTPServer(self._addr, self._class)
-                self.server_name, self.server_port = server.start_background()
-                try:
-                    res = func(*args, ts=self, **kwargs)
-                except:
-                    server.stop_background()
-                    raise
-                server.stop_background()
-                return res
-            return wrap
+                with self:
+                    return func(*args, ts=self, **kwargs)
+        return wrap
+
+    def __enter__(self):
+        self.server = HTTPServer(self._addr, self._class)
+        self.server_name, self.server_port = self.server.start_background()
+        return self
+
+    def __exit__(self, _exc_type, _exc_value, _traceback):
+        self.server.stop_background()
+        self.server = None
 
     def url(self):
         '''
