@@ -73,16 +73,6 @@ import urllib.request
 
 import httptest
 
-class TestHTTPServer(httptest.Handler):
-
-    def do_GET(self):
-        contents = "what up".encode()
-        self.send_response(200)
-        self.send_header("Content-type", "text/plain")
-        self.send_header("Content-length", len(contents))
-        self.end_headers()
-        self.wfile.write(contents)
-
 FILE_PATH = pathlib.Path(__file__)
 
 class TestHTTPTestMethods(unittest.TestCase):
