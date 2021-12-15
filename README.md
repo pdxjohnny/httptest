@@ -63,6 +63,43 @@ if __name__ == '__main__':
     unittest.main()
 ```
 
+### Serve Files
+
+```python
+import pathlib
+import unittest
+import http.server
+import urllib.request
+
+import httptest
+
+class TestHTTPServer(httptest.Handler):
+
+    def do_GET(self):
+        contents = "what up".encode()
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.send_header("Content-length", len(contents))
+        self.end_headers()
+        self.wfile.write(contents)
+
+FILE_PATH = pathlib.Path(__file__)
+
+class TestHTTPTestMethods(unittest.TestCase):
+
+    @httptest.Server(
+        lambda *args: http.server.SimpleHTTPRequestHandler(
+            *args, directory=FILE_PATH.parent
+        )
+    )
+    def test_call_response(self, ts=httptest.NoServer()):
+        with urllib.request.urlopen(ts.url() + FILE_PATH.name) as f:
+            self.assertEqual(f.read().decode('utf-8'), FILE_PATH.read_text())
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
 ### Asyncio Support
 
 Asyncio support for the unittest package hasn't yet landed in Python.
