@@ -6,6 +6,7 @@ which is started and stopped using the httptest.Server() decorator.
 import os
 import io
 import json
+import socket
 import hashlib
 import inspect
 import selectors
@@ -210,10 +211,10 @@ class HTTPServer(ThreadingHTTPServer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__server = False
-        self.__send = False
+        self.__control_send = False
 
     #pylint: disable=arguments-differ
-    def serve_forever(self, addr_queue, pipe):
+    def serve_forever(self, addr_queue, control_recv):
         '''
         Start the server handle requests and wait for shutdown.
         '''
@@ -221,11 +222,12 @@ class HTTPServer(ThreadingHTTPServer):
         addr_queue.put(self.server_port)
         with selectors.DefaultSelector() as selector:
             selector.register(self, selectors.EVENT_READ)
-            selector.register(pipe, selectors.EVENT_READ)
+            selector.register(control_recv, selectors.EVENT_READ)
             while True:
                 ready = selector.select()
                 for i in ready:
-                    if i[0].fd != self.fileno():
+                    if i[0].fd == control_recv.fileno():
+                        control_recv.close()
                         return self.socket.close()
                     self._handle_request_noblock()
 
@@ -236,11 +238,11 @@ class HTTPServer(ThreadingHTTPServer):
         stop_background is called. Returns the server hostname and
         port as a tuple.
         '''
-        if self.__server is not False or self.__send is not False:
+        if self.__server is not False or self.__control_send is not False:
             raise AlreadyStarted()
         addr_queue = multiprocessing.Queue()
-        recv, self.__send = multiprocessing.Pipe()
-        self.__server = threading.Thread(target=self.serve_forever, args=(addr_queue, recv))
+        control_recv, self.__control_send = socket.socketpair(socket.AF_INET, socket.SOCK_STREAM)
+        self.__server = threading.Thread(target=self.serve_forever, args=(addr_queue, control_recv))
         self.__server.start()
         return addr_queue.get(True), addr_queue.get(True)
 
@@ -249,11 +251,13 @@ class HTTPServer(ThreadingHTTPServer):
         Stop a running server. Raises NotStarted if called before
         start_background.
         '''
-        if not self.__server or not self.__send:
+        if not self.__server or not self.__control_send:
             raise NotStarted()
-        self.__send.send('shutdown')
+        # Send a byte to the other thread
+        self.__control_send.send(b'\x01')
+        self.__control_send.close()
         self.__server = False
-        self.__send = False
+        self.__control_send = False
 
 class NoServer(object):
     '''
