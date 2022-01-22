@@ -9,6 +9,7 @@ import json
 import socket
 import hashlib
 import inspect
+import platform
 import selectors
 import threading
 import http.server
@@ -241,7 +242,10 @@ class HTTPServer(ThreadingHTTPServer):
         if self.__server is not False or self.__control_send is not False:
             raise AlreadyStarted()
         addr_queue = multiprocessing.Queue()
-        control_recv, self.__control_send = socket.socketpair(socket.AF_INET, socket.SOCK_STREAM)
+        control_recv, self.__control_send = socket.socketpair(
+            socket.AF_INET if platform.system() == "Windows" else socket.AF_UNIX,
+            socket.SOCK_STREAM,
+        )
         self.__server = threading.Thread(target=self.serve_forever, args=(addr_queue, control_recv))
         self.__server.start()
         return addr_queue.get(True), addr_queue.get(True)
