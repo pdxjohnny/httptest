@@ -1,6 +1,6 @@
 # httptest
 
-[![Build Status](https://travis-ci.org/pdxjohnny/httptest.svg?branch=master)](https://travis-ci.org/pdxjohnny/httptest) [![codecov](https://codecov.io/gh/pdxjohnny/httptest/branch/master/graph/badge.svg)](https://codecov.io/gh/pdxjohnny/httptest)
+[![Tests](https://github.com/pdxjohnny/httptest/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/pdxjohnny/httptest/actions/workflows/tests.yml) [![codecov](https://codecov.io/gh/pdxjohnny/httptest/branch/master/graph/badge.svg)](https://codecov.io/gh/pdxjohnny/httptest)
 
 HTTP testing inspired by golang's httptest package. Supports wrapping asyncio
 coroutine functions (`async def`).
