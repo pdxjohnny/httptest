@@ -297,7 +297,14 @@ class Server(object):
     def __init__(self, testServerClass, addr=('127.0.0.1', 0)):
         self._class = testServerClass
         self._addr = addr
-        self.server_name = addr[0]
+        self.server_name = "localhost"
+        # NOTE This variable holds the reported server name after bind.
+        # Python seems to be doing some kind of reverse lookup on the
+        # server name. This leads to odd behavior depending on the system's
+        # hosts file. GitHub Windows runners resolve to MiningMadness.com as
+        # some kind of loopback block and MacOS runners resolve to
+        # 1.0.0.127.in-addr.arpa which is probably some Apple thing.
+        self._server_name = addr[0]
         self.server_port = addr[1]
 
     def __call__(self, func, *args, **kwargs):
@@ -316,7 +323,7 @@ class Server(object):
 
     def __enter__(self):
         self.server = HTTPServer(self._addr, self._class)
-        self.server_name, self.server_port = self.server.start_background()
+        self._server_name, self.server_port = self.server.start_background()
         return self
 
     def __exit__(self, _exc_type, _exc_value, _traceback):
