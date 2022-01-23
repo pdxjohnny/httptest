@@ -33,8 +33,8 @@ jobs:
           ${{ runner.os }}-pip-
     - name: Install dependencies
       run: |
-        python -m pip install -U pip setuptools wheel
-        python -m pip install .[dev]
+        python -m pip install -U pip setuptools wheel 
+        python -m pip install -U build
     - name: Build
       run: |
         python -m build .
@@ -52,15 +52,30 @@ jobs:
       with:
         name: dist
         path: dist
+    - name: Get pip cache
+      id: pip-cache
+      run: |
+        python -c "from pip._internal.locations import USER_CACHE_DIR; print('::set-output name=dir::' + USER_CACHE_DIR)"
+    - name: pip cache
+      uses: actions/cache@v1
+      with:
+        path: ${{ steps.pip-cache.outputs.dir }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.py') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - name: Install dependencies
+      run: |
+        python -m pip install -U pip setuptools wheel
+        python -m pip install -U twine
     - name: Release
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
       run: |
-        ls -lAFR
         python -m twine upload dist/*
 
   github:
+    name: GitHub
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -69,16 +84,19 @@ jobs:
       with:
         name: dist
         path: dist
-    - name: Test
+    - name: Commit list
+      id: commits
       run: |
         tags=$(git for-each-ref --sort=creatordate --format '%(refname)' refs/tags | tail -n 2)
         latest_tag=$(tail -n 1 <<<$tags)
         previous_tag=$(head -n 1 <<<$tags)
         git log --oneline --abbrev "${latest_tag}...${previous_tag}" | sed -e 's/^/- /g' | tee COMMITS.md
+        echo "::set-output name=tag::${latest_tag}"
         ls -lAFR
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
+        tag_name: ${{ steps.commits.outputs.tag }}
         body_path: COMMITS.md
         files: |
           dist/*
