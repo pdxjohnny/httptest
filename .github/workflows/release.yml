@@ -110,7 +110,7 @@ jobs:
           --url "https://api.github.com/repos/${{ github.repository }}/releases/tags/${tag}" |
           grep '"id"' |
           head -n 1 |
-          sed -e 's/"id": //' -e 's/,//')
+          sed -e 's/.*"id": //' -e 's/,//')
         echo "release id: ${id}"
 
         curl --request POST \
