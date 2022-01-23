@@ -108,7 +108,9 @@ jobs:
           --header "Accept: application/vnd.github.v3+json" \
           --header "Authorization: Bearer ${GH_ACCESS_TOKEN}" \
           --url "https://api.github.com/repos/${{ github.repository }}/releases/tags/${tag}" |
-          sed -e 's/"tag_name": "//' -e 's/",//')
+          grep '"id"' |
+          head -n 1 |
+          sed -e 's/"id": "//' -e 's/",//')
         echo "release id: ${id}"
 
         curl --request POST \
