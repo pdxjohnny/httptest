@@ -1,0 +1,83 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch: {}
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+        - 3.10
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Get pip cache
+      id: pip-cache
+      run: |
+        python -c "from pip._internal.locations import USER_CACHE_DIR; print('::set-output name=dir::' + USER_CACHE_DIR)"
+    - name: pip cache
+      uses: actions/cache@v1
+      with:
+        path: ${{ steps.pip-cache.outputs.dir }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.py') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - name: Install dependencies
+      run: |
+        python -m pip install -U pip setuptools wheel
+        python -m pip install .[dev]
+    - name: Build
+      run: |
+        python -m build .
+    - uses: actions/upload-artifact@v2
+      with:
+        name: dist
+        path: dist
+
+  pypi:
+    name: PyPi
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - uses: actions/download-artifact@v2
+      with:
+        name: dist
+        path: dist
+    - name: Release
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+      run: |
+        ls -lAFR
+        python -m twine upload dist/*
+
+  github:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/download-artifact@v2
+      with:
+        name: dist
+        path: dist
+    - name: Test
+      run: |
+        tags=$(git for-each-ref --sort=creatordate --format '%(refname)' refs/tags | tail -n 2)
+        latest_tag=$(tail -n 1 <<<$tags)
+        previous_tag=$(head -n 1 <<<$tags)
+        git log --oneline --abbrev "${latest_tag}...${previous_tag}" | sed -e 's/^/- /g' | tee COMMITS.md
+        ls -lAFR
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        body_path: COMMITS.md
+        files: |
+          dist/*
+          LICENSE
