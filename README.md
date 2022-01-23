@@ -141,8 +141,8 @@ setup(
     name='your_package',
     ...
     tests_require=[
-        'httptest>=0.0.14',
-        'dffml>=0.1.2'
+        'httptest>=0.1.0',
+        'dffml>=0.4.0.post0'
     ]
 )
 ```
@@ -160,7 +160,7 @@ setup(
     name='your_package',
     ...
     tests_require=[
-        'httptest>=0.0.14'
+        'httptest>=0.1.0'
     ]
 )
 ```
