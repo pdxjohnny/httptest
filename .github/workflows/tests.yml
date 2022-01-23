@@ -84,11 +84,11 @@ jobs:
       run: |
         python -m unittest discover -v
     - name: Coverage Test
-      if: ${{ matrix.python-version == '3.10' }}
+      if: ${{ matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest' }}
       run: |
-        python -m coverage python -m unittest discover -v
+        python -m coverage run python -m unittest discover -v
     - name: Upload coverage to codecov
-      if: ${{ matrix.python-version == '3.10' }}
+      if: ${{ matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest' }}
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: |
