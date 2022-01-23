@@ -84,10 +84,36 @@ jobs:
       with:
         name: dist
         path: dist
-    - uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        prerelease: false
-        files: |
-          dist/*
-          LICENSE
+    - name: Upload wheel
+      env:
+        GH_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        set -x
+
+        tag=$(echo "${{ github.ref }}" | sed -e 's/.*\///g')
+
+        cd dist
+        wheel=$(echo *.whl)
+
+        notes=$(curl \
+          --header "Accept: application/vnd.github.v3+json" \
+          --header "Authorization: Bearer ${GH_ACCESS_TOKEN}" \
+          --url "https://api.github.com/repos/${{ github.repository }}/releases/generate-notes"
+          --data "{\"tag_name\": \"${tag}\"}")
+        echo "${notes}"
+        # TODO Update release body with notes, need to JSON escape
+        # https://docs.github.com/en/rest/reference/releases#update-a-release
+
+        id=$(curl \
+          --header "Accept: application/vnd.github.v3+json" \
+          --header "Authorization: Bearer ${GH_ACCESS_TOKEN}" \
+          --url "https://api.github.com/repos/${{ github.repository }}/releases/tags/${tag}" |
+          sed -e 's/"tag_name": "//' -e 's/",//')
+        echo "release id: ${id}"
+
+        curl --request POST \
+          --url "https://uploads.github.com/repos/${{ github.repository }}/releases/${id}/assets?name=${wheel}&access_token=${GH_ACCESS_TOKEN}"
+          --header "Authorization: Bearer ${GH_ACCESS_TOKEN}" \
+          --header "Content-Type: application/octet-stream" \
+          --data-binary @"${wheel}"
+          --fail
