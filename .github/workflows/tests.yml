@@ -80,15 +80,15 @@ jobs:
         pip install -e .[dev]
         python -m pip freeze
     - name: Test without coverage
-      if: ${{ matrix.python-version != "3.10" }}
+      if: ${{ matrix.python-version != '3.10' }}
       run: |
         python -m unittest discover -v
     - name: Coverage Test
-      if: ${{ matrix.python-version == "3.10" }}
+      if: ${{ matrix.python-version == '3.10' }}
       run: |
         python -m coverage python -m unittest discover -v
     - name: Upload coverage to codecov
-      if: ${{ matrix.python-version == "3.10" }}
+      if: ${{ matrix.python-version == '3.10' }}
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: |
