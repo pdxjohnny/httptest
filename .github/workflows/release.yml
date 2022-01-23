@@ -84,20 +84,10 @@ jobs:
       with:
         name: dist
         path: dist
-    - name: Commit list
-      id: commits
-      run: |
-        tags=$(git for-each-ref --sort=creatordate --format '%(refname)' refs/tags | tail -n 2)
-        latest_tag=$(tail -n 1 <<<$tags)
-        previous_tag=$(head -n 1 <<<$tags)
-        git log --oneline --abbrev "${latest_tag}...${previous_tag}" | sed -e 's/^/- /g' | tee COMMITS.md
-        echo "::set-output name=tag::${latest_tag}"
-        ls -lAFR
-    - name: Release
-      uses: softprops/action-gh-release@v1
+    - uses: "marvinpinto/action-automatic-releases@latest"
       with:
-        tag_name: ${{ steps.commits.outputs.tag }}
-        body_path: COMMITS.md
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: false
         files: |
           dist/*
           LICENSE
