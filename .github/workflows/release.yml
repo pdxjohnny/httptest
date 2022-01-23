@@ -98,7 +98,7 @@ jobs:
         notes=$(curl \
           --header "Accept: application/vnd.github.v3+json" \
           --header "Authorization: Bearer ${GH_ACCESS_TOKEN}" \
-          --url "https://api.github.com/repos/${{ github.repository }}/releases/generate-notes"
+          --url "https://api.github.com/repos/${{ github.repository }}/releases/generate-notes" \
           --data "{\"tag_name\": \"${tag}\"}")
         echo "${notes}"
         # TODO Update release body with notes, need to JSON escape
@@ -112,8 +112,8 @@ jobs:
         echo "release id: ${id}"
 
         curl --request POST \
-          --url "https://uploads.github.com/repos/${{ github.repository }}/releases/${id}/assets?name=${wheel}&access_token=${GH_ACCESS_TOKEN}"
+          --url "https://uploads.github.com/repos/${{ github.repository }}/releases/${id}/assets?name=${wheel}&access_token=${GH_ACCESS_TOKEN}" \
           --header "Authorization: Bearer ${GH_ACCESS_TOKEN}" \
           --header "Content-Type: application/octet-stream" \
-          --data-binary @"${wheel}"
+          --data-binary @"${wheel}" \
           --fail
