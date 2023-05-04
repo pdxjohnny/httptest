@@ -294,9 +294,14 @@ class Server(object):
                     self.assertEqual(f.read().decode("utf-8"), "[2, 4]")
     '''
 
-    def __init__(self, testServerClass, addr=('127.0.0.1', 0)):
+    def __init__(self, testServerClass, addr=('127.0.0.1', 0), keyfile=None, certfile=None):
         self._class = testServerClass
         self._addr = addr
+        self._keyfile = keyfile
+        self._certfile = certfile
+        self._protocol = "http"
+        if self._keyfile and self._certfile:
+            self._protocol = "https"
         self.server_name = "localhost"
         # NOTE This variable holds the reported server name after bind.
         # Python seems to be doing some kind of reverse lookup on the
@@ -323,6 +328,13 @@ class Server(object):
 
     def __enter__(self):
         self.server = HTTPServer(self._addr, self._class)
+        if self._keyfile and self._certfile:
+            self.server.socket = ssl.wrap_socket(
+                self.server.socket,
+                keyfile=self._keyfile,
+                certfile=self._certfile,
+                server_side=True,
+            )
         self._server_name, self.server_port = self.server.start_background()
         return self
 
@@ -334,4 +346,4 @@ class Server(object):
         '''
         Server URL formatted as http://server_name:server_port/
         '''
-        return 'http://{0}:{1}/'.format(self.server_name, self.server_port)
+        return '{0}://{1}:{2}/'.format(self._protocol, self.server_name, self.server_port)
