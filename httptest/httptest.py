@@ -6,6 +6,7 @@ which is started and stopped using the httptest.Server() decorator.
 import os
 import io
 import json
+import pickle
 import socket
 import hashlib
 import inspect
@@ -102,7 +103,7 @@ class CachingProxyHandler(Handler):
     def cached(self, key):
         return bool(all(list(map(lambda needed: \
                     os.path.isfile(self.cache_path(key + needed)),
-                    ['.status', '.headers', '.body']))))
+                    ['.url', '.status', '.headers', '.body']))))
 
     def cache_key(self):
         body = None
@@ -125,15 +126,21 @@ class CachingProxyHandler(Handler):
         return digest.hexdigest(), body
 
     @contextmanager
-    def save_cache(self, key, status, headers, body):
+    def save_cache(self, key, req, status, headers, body):
         with open(self.cache_path(key + '.hits'), 'w') as fd:
             fd.write(str(0))
+        with open(self.cache_path(key + '.request.pickle'), 'wb') as fd:
+            pickle.dump(req, fd, pickle.HIGHEST_PROTOCOL)
+        with open(self.cache_path(key + '.url'), 'w') as fd:
+            fd.write(req.get_full_url())
         with open(self.cache_path(key + '.status'), 'w') as fd:
             fd.write(str(status))
         with open(self.cache_path(key + '.headers'), 'w') as fd:
             json.dump(dict(headers._headers), fd)
         with open(self.cache_path(key + '.body'), 'wb') as fd:
             fd.write(body.read())
+        with open(self.cache_path(key + '.response.pickle'), 'wb') as fd:
+            pickle.dump(body, fd, pickle.HIGHEST_PROTOCOL)
         with open(self.cache_path(key + '.body'), 'rb') as fd:
             yield fd
 
@@ -182,7 +189,7 @@ class CachingProxyHandler(Handler):
                     for header, content in f.headers.items():
                         self.send_header(header, content)
                     self.end_headers()
-                    with self.save_cache(key, f.status, f.headers, f) as c:
+                    with self.save_cache(key, req, f.status, f.headers, f) as c:
                         try:
                             self.wfile.write(c.read())
                         except BrokenPipeError:
