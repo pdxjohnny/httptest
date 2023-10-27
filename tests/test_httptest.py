@@ -74,7 +74,7 @@ class TestCachingMethods(unittest.TestCase):
                 with urllib.request.urlopen(ts.url() + 'get') as f:
                     self.assertEqual(f.read().decode('utf-8'), "what up")
                 self.assertEqual(len(list(glob.glob(os.path.join(tempdir,
-                    '*')))), 4)
+                    '*')))), 7)
                 with open(glob.glob(os.path.join(tempdir, '*.body'))[0], 'wb') \
                         as fd:
                     fd.write(b"waassss aaaap")
