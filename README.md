@@ -208,3 +208,10 @@ $ python -c 'import sys, pathlib, pickle, pprint; pprint.pprint(pickle.loads(pat
  'X-request-start': 't=1700084205915930',
  'X-ssl-ja3-hash': '7a15285d4efc355608b304698cd7f9ab'}
 ```
+
+## Examples
+
+See the [examples/](https://github.com/pdxjohnny/httptest/tree/master/examples/)
+directory for more examples.
+
+- [github_webhook_event_logger.py](https://github.com/pdxjohnny/httptest/tree/master/examples/github_webhook_event_logger.py)
