@@ -214,4 +214,4 @@ $ python -c 'import sys, pathlib, pickle, pprint; pprint.pprint(pickle.loads(pat
 See the [examples/](https://github.com/pdxjohnny/httptest/tree/master/examples/)
 directory for more examples.
 
-- [github_webhook_event_logger.py](https://github.com/pdxjohnny/httptest/tree/master/examples/github_webhook_event_logger.py)
+- [github_webhook_event_logger.py](https://github.com/pdxjohnny/httptest/blob/master/examples/github_webhook_event_logger.py)
