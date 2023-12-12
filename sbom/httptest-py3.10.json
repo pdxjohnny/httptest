@@ -1,0 +1,72 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:c27a785c-9643-4d47-a740-5d299cb6d9b4",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2023-12-12T16:36:04Z",
+    "tools": {
+      "components": [
+        {
+          "name": "sbom4python",
+          "version": "0.10.1",
+          "type": "application"
+        }
+      ]
+    },
+    "component": {
+      "type": "application",
+      "bom-ref": "CDXRef-DOCUMENT",
+      "name": "Python-httptest"
+    }
+  },
+  "components": [
+    {
+      "type": "application",
+      "bom-ref": "1-httptest",
+      "name": "httptest",
+      "version": "0.1.dev1+g1ed4d88",
+      "supplier": {
+        "name": "John Andersen",
+        "contact": [
+          {
+            "email": "johnandersenpdx@gmail.com"
+          }
+        ]
+      },
+      "cpe": "cpe:2.3:a:john_andersen:httptest:0.1.dev1+g1ed4d88:*:*:*:*:*:*:*",
+      "description": "Add unit tests to your http client",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "url": "https://pypi.org/project/httptest/0.1.dev1+g1ed4d88",
+          "type": "distribution",
+          "comment": "Download location for component"
+        }
+      ],
+      "purl": "pkg:pypi/httptest@0.1.dev1+g1ed4d88",
+      "properties": [
+        {
+          "name": "language",
+          "value": "Python"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "CDXRef-DOCUMENT",
+      "dependsOn": [
+        "1-httptest"
+      ]
+    }
+  ]
+}
