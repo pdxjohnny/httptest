@@ -52,7 +52,7 @@ jobs:
       id: in-toto-cyclonedx
       run: |
         echo "attestation<<GITHUB_OUTPUT_EOF" >> $GITHUB_OUTPUT
-        tee -a $GITHUB_OUTPUT <<EOF
+        (python -m json.tool --sort_keys | tee -a $GITHUB_OUTPUT) <<EOF
         {
           "_type": "https://in-toto.io/Statement/v0.1",
           "subject": [
@@ -74,7 +74,7 @@ jobs:
     - name: Checkout public-keys branch
       uses: actions/checkout@v4
       with:
-        ref: ${{ env.SAVE_DB_BRANCH }}
+        ref: public-keys
         path: public-keys
     - name: Generate keypair to sign SCITT statement
       id: scitt-gen-keypair
