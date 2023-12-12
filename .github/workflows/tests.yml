@@ -41,37 +41,15 @@ jobs:
     - name: Build
       run: |
         python -m build .
-
     - name: Generate SBOM
-      run: |
-        sbom4python --module httptest --output httptest-py${{ matrix.python-version }}.spdx
-        sbom4python --module httptest --sbom cyclonedx --format json --output httptest-py${{ matrix.python-version }}.json
-    - name: Compare SBOM
-      id: diff-sbom
-      # This would fail due to time/date of SBOM generation in SBOM header
-      # Therefore ignore first 10 lines of file in comparison which is SBOM header
-      run: |
-        if [ ! -d sbom ]; then
-          echo "changed=first-time" >> $GITHUB_OUTPUT
-          exit 0
-        fi
-
-        /bin/tail -n +10 sbom/httptest-py${{ matrix.python-version }}.spdx > orig
-        /bin/tail -n +10 httptest-py${{ matrix.python-version }}.spdx > new
-        echo "changed=$(/bin/diff -q orig new)" >> $GITHUB_OUTPUT
-    - name: Display generated SBOM if difference detected
-      if: ${{ steps.diff-sbom.outputs.changed }}
-      run: |
-        /bin/cat httptest-py${{ matrix.python-version }}.spdx
-    - name: Update existing SBOM if difference detected
-      if: ${{ steps.diff-sbom.outputs.changed }}
-      run: |
-        mkdir -pv sbom/
-        cp httptest-py${{ matrix.python-version }}.spdx sbom/httptest-py${{ matrix.python-version }}.spdx
-        cp httptest-py${{ matrix.python-version }}.json sbom/httptest-py${{ matrix.python-version }}.json
+      id: generate-sbom
+      uses: pdxjohnny/sbom4python@github-action
+      with:
+        module-name: httptest
+        output-directory: sbom
     - name: Create Pull Request
-      if: ${{ steps.diff-sbom.outputs.changed }}
-      uses: peter-evans/create-pull-request@153407881ec5c347639a548ade7d8ad1d6740e38 # v5.0.2
+      if: ${{ steps.generate-sbom.outputs.changed }}
+      uses: peter-evans/create-pull-request@v5.0.2
       with:
         commit-message: "chore: update SBOM for Python ${{ matrix.python-version }}"
         title: "chore: update SBOM for Python ${{ matrix.python-version }}"
