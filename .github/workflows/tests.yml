@@ -48,6 +48,36 @@ jobs:
         python-version: ${{ matrix.python-version }}
         module-name: httptest
         output-directory: sbom
+    - name: in-toto attestation for cyclonedx SBOM
+      id: in-toto-cyclonedx
+      run: |
+        echo "attestation<<GITHUB_OUTPUT_EOF" >> $GITHUB_OUTPUT
+        tee -a $GITHUB_OUTPUT <<EOF
+        {
+          "_type": "https://in-toto.io/Statement/v0.1",
+          "subject": [
+            {
+              "name": "$(cd dist/ && echo *.tar.gz)",
+              "digest": {"sha256": "$(cd dist/ && sha256sum $(echo *.tar.gz) | awk '{print $1}')"}
+            },
+            {
+              "name": "$(cd dist/ && echo *.whl)",
+              "digest": {"sha256": "$(cd dist/ && sha256sum $(echo *.whl) | awk '{print $1}')"}
+            }
+          ],
+          "predicateType": "https://cyclonedx.org/bom/v1.4",
+          "predicate": $(cat "httptest-py${{ matrix.python-version }}.json")
+          }
+        }
+        EOF
+        echo "GITHUB_OUTPUT_EOF" >> $GITHUB_OUTPUT
+    - name: Submit SBOM to SCITT
+      id: scitt-submit-sbom
+      uses: pdxjohnny/scitt-api-emulator@github-action
+      with:
+        issuer: did:web:github.com:pdxjohnny.keys
+        payload: ${{ steps.in-toto-cyclonedx.outputs.attestation }}
+        scitt-url: https://scitt.unstable.chadig.com
     - name: Create Pull Request
       if: ${{ steps.generate-sbom.outputs.changed }}
       uses: peter-evans/create-pull-request@v5.0.2
