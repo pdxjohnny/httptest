@@ -101,7 +101,7 @@ jobs:
       id: scitt-submit-sbom
       uses: pdxjohnny/scitt-api-emulator@github-action
       with:
-        issuer: did:web:raw.githubusercontent.com:pdxjohnny:public-keys:authorized_keys
+        issuer: did:web:raw.githubusercontent.com:pdxjohnny:httptest:public-keys:authorized_keys
         subject: pkg:github/${{ github.repository }}@${{ github.sha }}
         payload: ${{ steps.in-toto-cyclonedx.outputs.attestation }}
         private-key-pem: private-key.pem
