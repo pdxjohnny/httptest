@@ -45,6 +45,7 @@ jobs:
       id: generate-sbom
       uses: pdxjohnny/sbom4python@github-action
       with:
+        python-version: ${{ matrix.python-version-version }}
         module-name: httptest
         output-directory: sbom
     - name: Create Pull Request
