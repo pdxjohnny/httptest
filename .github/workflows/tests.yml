@@ -71,13 +71,44 @@ jobs:
         }
         EOF
         echo "GITHUB_OUTPUT_EOF" >> $GITHUB_OUTPUT
+    - name: Checkout public-keys branch
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ env.SAVE_DB_BRANCH }}
+        path: public-keys
+    - name: Generate keypair to sign SCITT statement
+      id: scitt-gen-keypair
+      run: |
+        ssh-keygen -q -f ssh-private -t ecdsa -b 384 -N '' -I "$(date -Iseconds)" <<<y
+        cat ssh-private | python -c 'import sys; from cryptography.hazmat.primitives import serialization; print(serialization.load_ssh_private_key(sys.stdin.buffer.read(), password=None).private_bytes(encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption()).decode().rstrip())' > private-key.pem
+        cat ssh-private.pub | tee -a public-keys/authorized_keys
+        rm -v ssh-private ssh-private.pub
+    - name: Push new public key
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        set -xe
+        cd public-keys
+        gh auth setup-git
+        git config --global --add safe.directory "${PWD}"
+        git config --global user.email "actions@github.com"
+        git config --global user.name "GitHub Actions"
+        git add -A
+        # If no delta clean exit
+        git commit -sm "Snapshot" || exit 0
+        git push -uf origin "HEAD:public-keys"
     - name: Submit SBOM to SCITT
       id: scitt-submit-sbom
       uses: pdxjohnny/scitt-api-emulator@github-action
       with:
-        issuer: did:web:github.com:pdxjohnny.keys
+        issuer: did:web:raw.githubusercontent.com:pdxjohnny:public-keys:authorized_keys
+        subject: pkg:github/${{ github.repository }}@${{ github.sha }}
         payload: ${{ steps.in-toto-cyclonedx.outputs.attestation }}
+        private-key-pem: private-key.pem
         scitt-url: https://scitt.unstable.chadig.com
+    - name: Remove private key used in keypair to sign SCITT statement
+      run: |
+        rm -v private-key.pem
     - name: Create Pull Request
       if: ${{ steps.generate-sbom.outputs.changed }}
       uses: peter-evans/create-pull-request@v5.0.2
