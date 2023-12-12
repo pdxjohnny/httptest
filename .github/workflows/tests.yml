@@ -18,10 +18,10 @@ jobs:
         - "3.10"
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version-version }}
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ matrix.python-version-version }}
+        python-version: ${{ matrix.python-version }}
     - name: Get pip cache
       id: pip-cache
       run: |
@@ -30,7 +30,7 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ${{ steps.pip-cache.outputs.dir }}
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.py') }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.cfg') }}
         restore-keys: |
           ${{ runner.os }}-pip-
     - name: Install dev dependencies
@@ -45,7 +45,7 @@ jobs:
       id: generate-sbom
       uses: pdxjohnny/sbom4python@github-action
       with:
-        python-version: ${{ matrix.python-version-version }}
+        python-version: ${{ matrix.python-version }}
         module-name: httptest
         output-directory: sbom
     - name: Create Pull Request
@@ -74,10 +74,10 @@ jobs:
         - "3.12"
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version-version }}
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ matrix.python-version-version }}
+        python-version: ${{ matrix.python-version }}
     - name: Get pip cache
       id: pip-cache
       run: |
@@ -86,7 +86,7 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ${{ steps.pip-cache.outputs.dir }}
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.py') }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.cfg') }}
         restore-keys: |
           ${{ runner.os }}-pip-
     - name: Install dev dependencies
@@ -95,16 +95,16 @@ jobs:
         pip install -e .[dev]
         python -m pip freeze
     - name: Test without coverage
-      if: ${{ matrix.python-version-version != '3.10' }}
+      if: ${{ matrix.python-version != '3.10' }}
       run: |
         python -m unittest discover -v
     - name: Coverage Test
-      if: ${{ matrix.python-version-version == '3.10' && matrix.os == 'ubuntu-latest' }}
+      if: ${{ matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest' }}
       run: |
         python -m coverage run -m unittest discover -v
         python -m coverage report -m
     - name: Upload coverage to codecov
-      if: ${{ matrix.python-version-version == '3.10' && matrix.os == 'ubuntu-latest' }}
+      if: ${{ matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest' }}
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: |
