@@ -50,6 +50,8 @@ jobs:
         output-directory: sbom
     - name: in-toto attestation for cyclonedx SBOM
       id: in-toto-cyclonedx
+      env:
+        MODULE_NAME: httptest
       run: |
         echo "attestation<<GITHUB_OUTPUT_EOF" >> $GITHUB_OUTPUT
         (python -m json.tool --sort-keys | tee -a $GITHUB_OUTPUT) <<EOF
@@ -66,8 +68,7 @@ jobs:
             }
           ],
           "predicateType": "https://cyclonedx.org/bom/v1.4",
-          "predicate": $(cat "httptest-py${{ matrix.python-version }}.json")
-          }
+          "predicate": $(cat "${MODULE_NAME}-py${{ matrix.python-version }}.json")
         }
         EOF
         echo "GITHUB_OUTPUT_EOF" >> $GITHUB_OUTPUT
