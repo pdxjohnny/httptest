@@ -51,6 +51,11 @@ jobs:
       # This would fail due to time/date of SBOM generation in SBOM header
       # Therefore ignore first 10 lines of file in comparison which is SBOM header
       run: |
+        if [ ! -d sbom ]; then
+          echo "changed=first-time" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
         /bin/tail -n +10 sbom/httptest-py${{ matrix.python-version }}.spdx > orig
         /bin/tail -n +10 httptest-py${{ matrix.python-version }}.spdx > new
         echo "changed=$(/bin/diff -q orig new)" >> $GITHUB_OUTPUT
@@ -61,6 +66,7 @@ jobs:
     - name: Update existing SBOM if difference detected
       if: ${{ steps.diff-sbom.outputs.changed }}
       run: |
+        mkdir -pv sbom/
         cp httptest-py${{ matrix.python-version }}.spdx sbom/httptest-py${{ matrix.python-version }}.spdx
         cp httptest-py${{ matrix.python-version }}.json sbom/httptest-py${{ matrix.python-version }}.json
     - name: Create Pull Request
@@ -71,7 +77,7 @@ jobs:
         title: "chore: update SBOM for Python ${{ matrix.python-version }}"
         branch: chore-sbom-py${{ matrix.python-version }}
         delete-branch: true
-        author: GitHub <noreply@github.com>
+        author: GitHub Actions <actions@github.com>
         add-paths: sbom
 
   unittest:
