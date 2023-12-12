@@ -2,10 +2,10 @@
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "serialNumber": "urn:uuid:c27a785c-9643-4d47-a740-5d299cb6d9b4",
+  "serialNumber": "urn:uuid:e0a328ec-f98b-4217-80a1-0fa4299509fe",
   "version": 1,
   "metadata": {
-    "timestamp": "2023-12-12T16:36:04Z",
+    "timestamp": "2023-12-12T17:08:08Z",
     "tools": {
       "components": [
         {
@@ -26,7 +26,7 @@
       "type": "application",
       "bom-ref": "1-httptest",
       "name": "httptest",
-      "version": "0.1.dev1+g1ed4d88",
+      "version": "0.1.dev1+gc4ce110",
       "supplier": {
         "name": "John Andersen",
         "contact": [
@@ -35,7 +35,7 @@
           }
         ]
       },
-      "cpe": "cpe:2.3:a:john_andersen:httptest:0.1.dev1+g1ed4d88:*:*:*:*:*:*:*",
+      "cpe": "cpe:2.3:a:john_andersen:httptest:0.1.dev1+gc4ce110:*:*:*:*:*:*:*",
       "description": "Add unit tests to your http client",
       "licenses": [
         {
@@ -47,12 +47,12 @@
       ],
       "externalReferences": [
         {
-          "url": "https://pypi.org/project/httptest/0.1.dev1+g1ed4d88",
+          "url": "https://pypi.org/project/httptest/0.1.dev1+gc4ce110",
           "type": "distribution",
           "comment": "Download location for component"
         }
       ],
-      "purl": "pkg:pypi/httptest@0.1.dev1+g1ed4d88",
+      "purl": "pkg:pypi/httptest@0.1.dev1+gc4ce110",
       "properties": [
         {
           "name": "language",

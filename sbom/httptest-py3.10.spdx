@@ -2,26 +2,26 @@ SPDXVersion: SPDX-2.3
 DataLicense: CC0-1.0
 SPDXID: SPDXRef-DOCUMENT
 DocumentName: Python-httptest
-DocumentNamespace: http://spdx.org/spdxdocs/Python-httptest-48053ed2-4ad9-4eb0-812c-269beb264bad
+DocumentNamespace: http://spdx.org/spdxdocs/Python-httptest-2b2ff0f1-f917-4b45-84a5-df0cafb8deee
 LicenseListVersion: 3.22
 Creator: Tool: sbom4python-0.10.1
-Created: 2023-12-12T16:36:03Z
+Created: 2023-12-12T17:08:07Z
 CreatorComment: <text>This document has been automatically generated.</text>
 ##### 
 
 PackageName: httptest
 SPDXID: SPDXRef-Package-1-httptest
-PackageVersion: 0.1.dev1+g1ed4d88
+PackageVersion: 0.1.dev1+gc4ce110
 PrimaryPackagePurpose: APPLICATION
 PackageSupplier: Person: John Andersen (johnandersenpdx@gmail.com)
-PackageDownloadLocation: https://pypi.org/project/httptest/0.1.dev1+g1ed4d88
+PackageDownloadLocation: https://pypi.org/project/httptest/0.1.dev1+gc4ce110
 FilesAnalyzed: false
 PackageLicenseDeclared: MIT
 PackageLicenseConcluded: MIT
 PackageCopyrightText: NOASSERTION
 PackageSummary: <text>Add unit tests to your http client</text>
-ExternalRef: PACKAGE-MANAGER purl pkg:pypi/httptest@0.1.dev1+g1ed4d88
-ExternalRef: SECURITY cpe23Type cpe:2.3:a:john_andersen:httptest:0.1.dev1+g1ed4d88:*:*:*:*:*:*:*
+ExternalRef: PACKAGE-MANAGER purl pkg:pypi/httptest@0.1.dev1+gc4ce110
+ExternalRef: SECURITY cpe23Type cpe:2.3:a:john_andersen:httptest:0.1.dev1+gc4ce110:*:*:*:*:*:*:*
 ##### 
 
 Relationship: SPDXRef-DOCUMENT DESCRIBES SPDXRef-Package-1-httptest
