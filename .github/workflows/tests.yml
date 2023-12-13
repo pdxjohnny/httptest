@@ -36,6 +36,7 @@ jobs:
     - name: Install dev dependencies
       run: |
         pip install -U pip setuptools wheel
+        pip install -U https://github.com/scitt-community/scitt-api-emulator/archive/e89a60584fa717382f279ae24b8a1a93d458bb4d.zip
         pip install -e .[dev]
         python -m pip freeze
     - name: Build
