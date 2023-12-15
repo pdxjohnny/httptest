@@ -128,12 +128,12 @@ jobs:
         add-paths: sbom
     - name: Install vexctl
       uses: openvex/setup-vexctl@main
-    - uses: openvex/generate-vex@31b415924ea0d72ed5f2640f1dee59dea6c2770b
+    - uses: pdxjohnny/generate-vex@patch-1
       name: Run vexctl
       id: vexctl
       with:
         product: pkg:github/${{ github.repository }}@${{ github.sha }}
-    - name: Submit SBOM to SCITT
+    - name: Submit OpenVEX to SCITT
       id: scitt-submit-openvex
       uses: pdxjohnny/scitt-api-emulator@github-action
       with:
