@@ -116,9 +116,6 @@ jobs:
         payload: ${{ steps.in-toto-cyclonedx.outputs.attestation }}
         private-key-pem: private-key.pem
         scitt-url: https://scitt.unstable.chadig.com
-    - name: Remove private key used in keypair to sign SCITT statement
-      run: |
-        rm -v private-key.pem
     - name: Create Pull Request
       if: ${{ steps.generate-sbom.outputs.changed }}
       uses: peter-evans/create-pull-request@v5.0.2
@@ -129,6 +126,25 @@ jobs:
         delete-branch: true
         author: GitHub Actions <actions@github.com>
         add-paths: sbom
+    - name: Install vexctl
+      uses: openvex/setup-vexctl@main
+    - uses: openvex/generate-vex@31b415924ea0d72ed5f2640f1dee59dea6c2770b
+      name: Run vexctl
+      id: vexctl
+      with:
+        product: pkg:github/${{ github.repository }}@${{ github.sha }}
+    - name: Submit SBOM to SCITT
+      id: scitt-submit-openvex
+      uses: pdxjohnny/scitt-api-emulator@github-action
+      with:
+        issuer: did:web:raw.githubusercontent.com:pdxjohnny:httptest:public-keys:authorized_keys
+        subject: pkg:github/${{ github.repository }}@${{ github.sha }}
+        payload: ${{ steps.vexctl.outputs.openvex }}
+        private-key-pem: private-key.pem
+        scitt-url: https://scitt.unstable.chadig.com
+    - name: Remove private key used in keypair to sign SCITT statement
+      run: |
+        rm -v private-key.pem
 
   unittest:
     runs-on: ${{ matrix.os }}
