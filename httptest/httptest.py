@@ -301,7 +301,8 @@ class Server(object):
                     self.assertEqual(f.read().decode("utf-8"), "[2, 4]")
     '''
 
-    def __init__(self, testServerClass, addr=('127.0.0.1', 0), keyfile=None, certfile=None):
+    def __init__(self, testServerClass, addr=('127.0.0.1', 0), keyfile=None, certfile=None, config=None):
+        self.config = config if config is not None else {}
         self._class = testServerClass
         self._addr = addr
         self._keyfile = keyfile
@@ -335,6 +336,7 @@ class Server(object):
 
     def __enter__(self):
         self.server = HTTPServer(self._addr, self._class)
+        self.server.config = self.config
         if self._keyfile and self._certfile:
             self.server.socket = ssl.wrap_socket(
                 self.server.socket,
