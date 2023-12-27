@@ -2,15 +2,15 @@
   "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "serialNumber": "urn:uuid:c27a785c-9643-4d47-a740-5d299cb6d9b4",
+  "serialNumber": "urn:uuid:a9e12817-68ca-455a-8af1-e89bd55bc9e9",
   "version": 1,
   "metadata": {
-    "timestamp": "2023-12-12T16:36:04Z",
+    "timestamp": "2023-12-27T23:55:58Z",
     "tools": {
       "components": [
         {
           "name": "sbom4python",
-          "version": "0.10.1",
+          "version": "0.10.2",
           "type": "application"
         }
       ]
@@ -26,7 +26,7 @@
       "type": "application",
       "bom-ref": "1-httptest",
       "name": "httptest",
-      "version": "0.1.dev1+g1ed4d88",
+      "version": "0.1.dev1+ga60cf7a",
       "supplier": {
         "name": "John Andersen",
         "contact": [
@@ -35,7 +35,7 @@
           }
         ]
       },
-      "cpe": "cpe:2.3:a:john_andersen:httptest:0.1.dev1+g1ed4d88:*:*:*:*:*:*:*",
+      "cpe": "cpe:2.3:a:john_andersen:httptest:0.1.dev1+ga60cf7a:*:*:*:*:*:*:*",
       "description": "Add unit tests to your http client",
       "licenses": [
         {
@@ -47,16 +47,20 @@
       ],
       "externalReferences": [
         {
-          "url": "https://pypi.org/project/httptest/0.1.dev1+g1ed4d88",
+          "url": "https://pypi.org/project/httptest/0.1.dev1+ga60cf7a",
           "type": "distribution",
           "comment": "Download location for component"
         }
       ],
-      "purl": "pkg:pypi/httptest@0.1.dev1+g1ed4d88",
+      "purl": "pkg:pypi/httptest@0.1.dev1+ga60cf7a",
       "properties": [
         {
           "name": "language",
           "value": "Python"
+        },
+        {
+          "name": "python_version",
+          "value": "3.10.13"
         }
       ]
     }
