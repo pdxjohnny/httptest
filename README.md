@@ -165,6 +165,28 @@ setup(
 )
 ```
 
+## OIDC Server
+
+Start server `httptest-oidc`
+
+```console
+$ python -m httptest.oidc \
+    --issuer https://this-service.example.com \
+    --audience https://relying-party.example.com \
+    --addr 0.0.0.0 \
+    --port 8000 \
+    --subject test-subject \
+    --private-key-pem-path private-key.pem \
+    --token-path token.jwt
+```
+
+Make requests
+
+```console
+$ curl -H "Authorization: Bearer $(curl https://this-service.example.com/token | jq -r token)" -v https://relying-party.example.com
+$ curl -H "Authorization: Bearer $(cat token.jwt)" -v https://relying-party.example.com
+```
+
 ## Cache Server
 
 Run the caceh server and use it's URL in place of the upstream URL whatever you want to intercept on
