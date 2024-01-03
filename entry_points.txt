@@ -1,2 +1,3 @@
 [console_scripts]
 httptest-cache = httptest.cli:cache
+httptest-oidc = httptest.oidc:main
